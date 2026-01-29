@@ -11,7 +11,6 @@ import { getJwtConfig } from 'src/config/jwt.config';
   imports:[JwtModule.registerAsync({
     imports:[ConfigModule],
     useFactory:getJwtConfig,
-
     inject:[ConfigService],
   })]
 })

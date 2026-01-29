@@ -7,19 +7,21 @@ import { JwtPayLoad } from './interfaces/jwt.interface';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { LoginRequest } from './dto/login.dto';
 
+
 @Injectable()
 export class AuthService {
     private readonly JWT_SECRET : string;
-    private readonly JWT_ACCESS_TOKEN_TTL : string;
-    private readonly JWT_REFRESH_TOKEN_TTL : string;
+    private readonly JWT_ACCESS_TOKEN_TTL: JwtSignOptions['expiresIn'];
+    private readonly JWT_REFRESH_TOKEN_TTL: JwtSignOptions['expiresIn'];
 
     constructor(
         private readonly prismaService:PrismaService ,
         private readonly configService: ConfigService,
         private readonly jwtService: JwtService){
-            this.JWT_ACCESS_TOKEN_TTL=String(configService.getOrThrow<string>("JWT_ACCESS_TOKEN_TTL"));
-            this.JWT_SECRET=configService.getOrThrow<string>("JWT_SECRET");
-            this.JWT_REFRESH_TOKEN_TTL=configService.getOrThrow<string>("JWT_REFRESH_TOKEN_TTL");
+        this.JWT_ACCESS_TOKEN_TTL = this.configService.getOrThrow('JWT_ACCESS_TOKEN_TTL');
+        this.JWT_REFRESH_TOKEN_TTL = this.configService.getOrThrow('JWT_REFRESH_TOKEN_TTL');
+        this.JWT_SECRET = this.configService.getOrThrow<string>('JWT_SECRET');
+
         }
 
 
@@ -37,7 +39,6 @@ export class AuthService {
         if(!existUser){
             throw new NotFoundException("User not found");
         } 
-        console.log(existUser);
 
         const isValidpassword=await verify(existUser.password,password);
         if(!isValidpassword){
@@ -69,21 +70,21 @@ export class AuthService {
 
     }
 
-    private generateTokens(id:string){
-        const payload:JwtPayLoad={id};
-        const accessToken=this.jwtService.sign(payload,{
-            expiresIn:this.JWT_ACCESS_TOKEN_TTL as JwtSignOptions['expiresIn']
-        })
+    private generateTokens(id: string) {
+    const payload: JwtPayLoad = { id };
+    console.log(typeof this.JWT_ACCESS_TOKEN_TTL);
 
-        const refreshToken=this.jwtService.sign(payload,{
-            expiresIn:this.JWT_REFRESH_TOKEN_TTL as JwtSignOptions['expiresIn']
-        })
+    const accessToken = this.jwtService.sign(payload, {
+        expiresIn: this.JWT_ACCESS_TOKEN_TTL
+    });
 
-        return {
-            accessToken,
-            refreshToken
-        }
+    const refreshToken = this.jwtService.sign(payload, {
+        expiresIn: this.JWT_REFRESH_TOKEN_TTL
+    });
+
+    return { accessToken, refreshToken };
     }
+
 
 
 }

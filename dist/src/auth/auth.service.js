@@ -20,9 +20,9 @@ let AuthService = class AuthService {
         this.prismaService = prismaService;
         this.configService = configService;
         this.jwtService = jwtService;
-        this.JWT_ACCESS_TOKEN_TTL = String(configService.getOrThrow("JWT_ACCESS_TOKEN_TTL"));
-        this.JWT_SECRET = configService.getOrThrow("JWT_SECRET");
-        this.JWT_REFRESH_TOKEN_TTL = configService.getOrThrow("JWT_REFRESH_TOKEN_TTL");
+        this.JWT_ACCESS_TOKEN_TTL = this.configService.getOrThrow('JWT_ACCESS_TOKEN_TTL');
+        this.JWT_REFRESH_TOKEN_TTL = this.configService.getOrThrow('JWT_REFRESH_TOKEN_TTL');
+        this.JWT_SECRET = this.configService.getOrThrow('JWT_SECRET');
     }
     async login(dto) {
         const { password, email } = dto;
@@ -38,7 +38,6 @@ let AuthService = class AuthService {
         if (!existUser) {
             throw new common_1.NotFoundException("User not found");
         }
-        console.log(existUser);
         const isValidpassword = await (0, argon2_1.verify)(existUser.password, password);
         if (!isValidpassword) {
             throw new common_1.NotFoundException("User not found");
@@ -66,16 +65,14 @@ let AuthService = class AuthService {
     }
     generateTokens(id) {
         const payload = { id };
+        console.log(typeof this.JWT_ACCESS_TOKEN_TTL);
         const accessToken = this.jwtService.sign(payload, {
             expiresIn: this.JWT_ACCESS_TOKEN_TTL
         });
         const refreshToken = this.jwtService.sign(payload, {
             expiresIn: this.JWT_REFRESH_TOKEN_TTL
         });
-        return {
-            accessToken,
-            refreshToken
-        };
+        return { accessToken, refreshToken };
     }
 };
 exports.AuthService = AuthService;
