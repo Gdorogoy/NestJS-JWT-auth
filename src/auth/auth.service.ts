@@ -127,6 +127,18 @@ export class AuthService {
         return accessToken;
     }
 
+    async validate(id:string){
+        const user=await this.prismaService.user.findUnique({
+            where:{
+                id
+            }
+        });
+        if(!user){
+            throw new NotFoundException('user not found');
+        }
+        return user;
+    }
+
     private setCookie(res :Response,value:string, expiresAt:Date){
         res.cookie(
             'refreshToken',
